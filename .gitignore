@@ -116,5 +116,23 @@ bot.log
 *.json
 !package.json
 !pyproject.toml
+
+# Deployment backups
+deployment.backup.*
+*.backup.*
+
+# SSH keys (security)
+*.pem
+*.key
+id_rsa*
+github_actions*
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Development
 test_*.py
-tests/
+debug_*.py
+analyze_*.py
+simple_*.py

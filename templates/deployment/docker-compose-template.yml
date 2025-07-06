@@ -1,0 +1,233 @@
+# 🐳 Docker Compose Production Template
+#
+# Замените следующие значения:
+# - YOUR_PROJECT_NAME: название вашего проекта
+# - YOUR_IMAGE_NAME: название Docker образа
+# - YOUR_HEALTH_CHECK: команда для проверки здоровья
+# - YOUR_PORT: порт вашего приложения
+#
+# Сохраните как: docker-compose.prod.yml
+
+version: '3.8'
+
+services:
+  # === Основное приложение ===
+  app:
+    build: .
+    container_name: YOUR_PROJECT_NAME-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - ENV=production
+      - DEBUG=false
+    volumes:
+      # Персистентные данные
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      # Конфигурация (только чтение)
+      - ./config:/app/config:ro
+    networks:
+      - app-network
+    ports:
+      - "YOUR_PORT:YOUR_PORT"  # Замените на ваш порт
+    depends_on:
+      - database  # Раскомментируйте если используете базу данных
+      # - redis   # Раскомментируйте если используете Redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:YOUR_PORT/health"]  # Замените на вашу проверку
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # === База данных PostgreSQL (раскомментируйте если нужно) ===
+  # database:
+  #   image: postgres:15-alpine
+  #   container_name: YOUR_PROJECT_NAME-db
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_DB=${DB_NAME:-myapp}
+  #     - POSTGRES_USER=${DB_USER:-postgres}
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./db/init:/docker-entrypoint-initdb.d:ro
+  #   networks:
+  #     - app-network
+  #   ports:
+  #     - "5432:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # === MySQL база данных (альтернатива PostgreSQL) ===
+  # database:
+  #   image: mysql:8.0
+  #   container_name: YOUR_PROJECT_NAME-db
+  #   restart: unless-stopped
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-rootpassword}
+  #     - MYSQL_DATABASE=${DB_NAME:-myapp}
+  #     - MYSQL_USER=${DB_USER:-user}
+  #     - MYSQL_PASSWORD=${DB_PASSWORD:-password}
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - app-network
+  #   ports:
+  #     - "3306:3306"
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # === Redis Cache (раскомментируйте если нужно) ===
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: YOUR_PROJECT_NAME-redis
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispassword}
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - app-network
+  #   ports:
+  #     - "6379:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 5
+
+  # === Nginx Reverse Proxy (раскомментируйте если нужно) ===
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: YOUR_PROJECT_NAME-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/ssl/certs:ro
+  #     - ./nginx/logs:/var/log/nginx
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     - app
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # === Мониторинг: Prometheus ===
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: YOUR_PROJECT_NAME-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - app-network
+
+  # === Мониторинг: Grafana ===
+  grafana:
+    image: grafana/grafana:latest
+    container_name: YOUR_PROJECT_NAME-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    networks:
+      - app-network
+    depends_on:
+      - prometheus
+
+  # === Логирование: Loki ===
+  loki:
+    image: grafana/loki:latest
+    container_name: YOUR_PROJECT_NAME-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - app-network
+
+  # === Автоматические обновления: Watchtower (раскомментируйте если нужно) ===
+  # watchtower:
+  #   image: containrrr/watchtower:latest
+  #   container_name: YOUR_PROJECT_NAME-watchtower
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     - WATCHTOWER_CLEANUP=true
+  #     - WATCHTOWER_SCHEDULE=0 0 2 * * *  # Daily at 2 AM
+  #     - WATCHTOWER_NOTIFICATIONS=email
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_FROM=${EMAIL_FROM}
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_TO=${EMAIL_TO}
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_SERVER=${SMTP_SERVER}
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT=${SMTP_PORT:-587}
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER=${SMTP_USER}
+  #     - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=${SMTP_PASSWORD}
+  #   command: --interval 3600 YOUR_PROJECT_NAME-prod
+
+# === Сети ===
+networks:
+  app-network:
+    driver: bridge
+    name: YOUR_PROJECT_NAME-network
+
+# === Персистентные тома ===
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  loki_data:
+    driver: local
+  # postgres_data:  # Раскомментируйте если используете PostgreSQL
+  #   driver: local
+  # mysql_data:     # Раскомментируйте если используете MySQL
+  #   driver: local
+  # redis_data:     # Раскомментируйте если используете Redis
+  #   driver: local
