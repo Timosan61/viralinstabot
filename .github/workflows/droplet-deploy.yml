@@ -25,10 +25,10 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -59,12 +59,12 @@ jobs:
   docker-deploy:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.ref == 'refs/heads/main'
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Setup SSH
       run: |
@@ -192,6 +192,8 @@ jobs:
   notify:
     needs: [docker-deploy]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     
     steps:
