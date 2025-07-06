@@ -64,7 +64,12 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ env.DROPLET_HOST }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ${{ env.DROPLET_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+        
+    - name: Test SSH Connection
+      run: |
+        echo "Testing SSH connection to ${{ env.DROPLET_USER }}@${{ env.DROPLET_HOST }}"
+        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ env.DROPLET_USER }}@${{ env.DROPLET_HOST }} "echo 'SSH connection successful' && whoami && pwd" || exit 1
     
     - name: Deploy with Docker Compose
       run: |
@@ -79,8 +84,8 @@ jobs:
           
           echo -e "${GREEN}🐳 Starting Docker deployment...${NC}"
           
-          # Navigate to app directory (current directory in your case)
-          cd /home/coder/Desktop/2202/Viralinstabot
+          # Navigate to app directory
+          cd ~/Desktop/2202/Viralinstabot
           
           # Create backup of current containers
           echo -e "${YELLOW}Creating backup...${NC}"
@@ -137,7 +142,7 @@ jobs:
     - name: Health Check
       run: |
         ssh ${{ env.DROPLET_USER }}@${{ env.DROPLET_HOST }} << 'ENDSSH'
-          cd /home/coder/Desktop/2202/Viralinstabot
+          cd ~/Desktop/2202/Viralinstabot
           
           # Wait a bit for containers to fully start
           sleep 15
@@ -170,7 +175,7 @@ jobs:
     - name: Cleanup old backups
       run: |
         ssh ${{ env.DROPLET_USER }}@${{ env.DROPLET_HOST }} << 'ENDSSH'
-          cd /home/coder/Desktop/2202/Viralinstabot
+          cd ~/Desktop/2202/Viralinstabot
           
           # Keep only last 5 deployment backups
           find . -name "deployment.backup.*" -type f | sort -r | tail -n +6 | xargs -r rm -f
