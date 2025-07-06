@@ -94,6 +94,20 @@ jobs:
           # Navigate to app directory
           cd ~/Desktop/2202/Viralinstabot
           
+          # Diagnostic information
+          echo -e "${YELLOW}=== DEPLOYMENT DIAGNOSTICS ===${NC}"
+          echo "Current directory: $(pwd)"
+          echo "User: $(whoami)"
+          echo "Docker version: $(docker --version)"
+          echo "Docker compose version: $(docker-compose --version)"
+          echo "Files in directory:"
+          ls -la | head -10
+          echo "Environment files:"
+          ls -la .env* || echo "No .env files found"
+          echo "Docker compose file check:"
+          docker-compose -f docker-compose.prod.yml config >/dev/null 2>&1 && echo "✅ Compose file valid" || echo "❌ Compose file invalid"
+          echo -e "${YELLOW}=== END DIAGNOSTICS ===${NC}"
+          
           # Create backup of current containers
           echo -e "${YELLOW}Creating backup...${NC}"
           docker-compose -f docker-compose.prod.yml ps > deployment.backup.$(date +%Y%m%d_%H%M%S) || true
