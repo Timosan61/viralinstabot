@@ -16,7 +16,6 @@ def get_main_menu_keyboard():
         [InlineKeyboardButton(text="🔗 Анализ по ссылке на Reel", callback_data="type:reel_url")],
         [InlineKeyboardButton(text="🔬 Анализ с AI Vision", callback_data="vision_analysis")],
         [InlineKeyboardButton(text="📋 Мои контексты", callback_data="contexts:main")],
-        [InlineKeyboardButton(text="ℹ️ О проекте", callback_data="about_project")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
