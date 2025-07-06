@@ -20,7 +20,7 @@ from .prompts import (
     VARIANT_SCENARIO_PROMPT,
     CONTEXT_BASED_SCENARIO_PROMPT
 )
-from .video_processor import VideoProcessor
+from .video_processor_dummy import VideoProcessor  # Использем заглушку вместо cv2
 # Whisper service removed
 from src.features.user_context import get_context_manager
 from src.domain.models import ReelData
@@ -54,7 +54,7 @@ class ScenarioGenerator:
             openai_api_key: API ключ OpenAI
         """
         self.openai_client = AsyncOpenAI(api_key=openai_api_key)
-        self.video_processor = VideoProcessor()
+        self.video_processor = VideoProcessor()  # Используем заглушку
         self.max_frames = 8  # Максимум кадров для анализа
         
     async def generate_complete_scenario(
@@ -153,10 +153,11 @@ class ScenarioGenerator:
             
             try:
                 # Извлечь кадры из видео
-                frames_base64 = await self._extract_video_frames(video_path)
+                # frames_base64 = await self._extract_video_frames(video_path)  # Временно отключено
+                frames_base64 = []
                 if not frames_base64:
-                    logger.error("Failed to extract frames from video")
-                    return None
+                    logger.warning("Video analysis temporarily disabled - returning placeholder")
+                    return "Video analysis currently not available"
                 
                 # Подготовить содержимое для GPT-4o
                 content = [{"type": "text", "text": VISION_ANALYSIS_PROMPT}]
