@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: instagram-viral-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - ENV=production
+      - DEBUG=False
+    networks:
+      - bot-network
+    depends_on:
+      - mcp-server
+
+  mcp-server:
+    image: node:18-alpine
+    container_name: apify-mcp-server
+    restart: unless-stopped
+    command: npx -y @apify/actors-mcp-server
+    environment:
+      - APIFY_TOKEN=${APIFY_API_TOKEN}
+    networks:
+      - bot-network
+    volumes:
+      - mcp-data:/data
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  mcp-data:

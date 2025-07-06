@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сценарий для Reels</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .header {
+            padding: 24px;
+            background-color: #4a4a4a;
+            color: white;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .content {
+            padding: 24px;
+        }
+        .section {
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .section-content p, .section-content ul {
+            font-size: 16px;
+            color: #495057;
+        }
+        .section-content ul {
+            padding-left: 20px;
+        }
+        .section-content li {
+            margin-bottom: 8px;
+        }
+        .code-block {
+            background-color: #f1f3f5;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            color: #adb5bd;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Сценарий Reels с AI Vision</h1>
+        </div>
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">🔬 Анализ исходного видео</h2>
+                <div class="section-content code-block">
+                    <p>{{ vision_analysis | safe }}</p>
+                </div>
+            </div>
+            
+            {% if audio_transcript %}
+            <div class="section">
+                <h2 class="section-title">🎤 Транскрипция аудио</h2>
+                <div class="section-content code-block">
+                    <p><em>{{ audio_transcript }}</em></p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="section">
+                <h2 class="section-title">🎬 Ваш новый сценарий</h2>
+                <div class="section-content">
+                    {{ scenario | safe }}
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Сгенерировано ViralInstaBot
+        </div>
+    </div>
+</body>
+</html>

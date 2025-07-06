@@ -1,0 +1,47 @@
+[Unit]
+Description=Viral Instagram Bot - Telegram Bot for Instagram Reels Analysis
+Documentation=https://github.com/yourusername/viralinstabot
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=coder
+Group=coder
+WorkingDirectory=/home/coder/Desktop/2202/Viralinstabot
+
+# Environment variables
+Environment="PATH=/usr/bin:/usr/local/bin:/home/coder/.local/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="LANG=en_US.UTF-8"
+
+# Start command
+ExecStart=/usr/bin/python3 /home/coder/Desktop/2202/Viralinstabot/run.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=viralinstabot
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+MemoryLimit=1G
+CPUQuota=80%
+
+# Prevent rapid restart loops
+StartLimitInterval=300
+StartLimitBurst=10
+
+# Kill signal and timeout
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

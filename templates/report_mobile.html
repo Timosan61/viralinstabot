@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика Reels {{ header.username }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .report-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        
+        /* Header Section */
+        .header {
+            margin-bottom: 20px;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #000000;
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .profile-username {
+            font-size: 16px;
+            font-weight: 500;
+            color: #000000;
+        }
+        
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 16px;
+            margin-bottom: 20px;
+        }
+        
+        .metrics-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .metric-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        
+        .metric-icon {
+            font-size: 14px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            display: inline-block;
+            font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+        }
+        
+        .metric-label {
+            color: #666666;
+            flex: 1;
+        }
+        
+        .metric-value {
+            font-weight: 500;
+            color: #000000;
+        }
+        
+        /* Export Buttons */
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px solid #e0e0e0;
+            background-color: #f8f8f8;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333333;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .export-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #d0d0d0;
+        }
+        
+        .export-icon {
+            font-size: 14px;
+        }
+        
+        .download-icon {
+            font-size: 12px;
+            margin-left: 2px;
+        }
+        
+        /* Reels Cards */
+        .reels-section {
+            margin-top: 24px;
+        }
+        
+        .reel-card {
+            display: flex;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            background-color: #ffffff;
+        }
+        
+        .reel-number {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 2;
+        }
+        
+        .reel-preview-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .reel-preview {
+            width: 160px;
+            height: 284px;
+            object-fit: cover;
+        }
+        
+        .reel-author-overlay {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 16px;
+            padding: 4px 10px 4px 4px;
+            z-index: 1;
+        }
+        
+        .reel-author-overlay-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 6px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .reel-author-overlay-username {
+            font-size: 12px;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .reel-content {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .reel-url {
+            font-size: 12px;
+            color: #666666;
+            text-decoration: none;
+            margin-bottom: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .reel-url:hover {
+            color: #1a73e8;
+            text-decoration: underline;
+        }
+        
+        .reel-metrics {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .reel-metric {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+        }
+        
+        .reel-metric-icon {
+            font-size: 14px;
+        }
+        
+        .reel-er {
+            font-size: 14px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 12px;
+        }
+        
+        .scenario-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333333;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            align-self: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .scenario-btn:hover {
+            background-color: #f8f8f8;
+            border-color: #d0d0d0;
+        }
+
+        .vision-btn {
+            background-color: #e8eaf6;
+            border-color: #c5cae9;
+            color: #3f51b5;
+        }
+
+        .vision-btn:hover {
+            background-color: #d1d9f0;
+            border-color: #b0b8e0;
+        }
+        
+        .reel-caption {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333333;
+            margin-top: auto;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .export-buttons {
+                display: none;
+            }
+            
+            .reel-card {
+                break-inside: avoid;
+            }
+        }
+
+        /* Vision Analysis Section */
+        .vision-analysis-section {
+            border: 1px solid #e5e5e5;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 16px;
+            margin-top: -16px;
+            margin-bottom: 16px;
+            background-color: #f8f9fa;
+        }
+
+        .vision-analysis-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .vision-analysis-content p {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .vision-analysis-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="header-title">Аналитика Reels {{ header.username }}</h1>
+            
+            <div class="profile-info">
+                {% if header.avatar %}
+                <img src="{{ header.avatar }}" alt="{{ header.username }}" class="profile-avatar">
+                {% else %}
+                <div class="profile-avatar" style="background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: #666;">{{ header.username[1] }}</div>
+                {% endif %}
+                <div class="profile-username">{{ header.username }}</div>
+            </div>
+            
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metrics-column">
+                    <div class="metric-item">
+                        <span class="metric-icon">👥</span>
+                        <span class="metric-label">Выборка:</span>
+                        <span class="metric-value">{{ header.metrics.selectionSize|default('0') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">📅</span>
+                        <span class="metric-label">Период:</span>
+                        <span class="metric-value">{{ header.metrics.period|default('7 дней') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">👀</span>
+                        <span class="metric-label">Общие просмотры:</span>
+                        <span class="metric-value">{{ header.metrics.views|default('0') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">❤️</span>
+                        <span class="metric-label">Общие лайки:</span>
+                        <span class="metric-value">{{ header.metrics.likes|default('0') }}</span>
+                    </div>
+                </div>
+                
+                <div class="metrics-column">
+                    <div class="metric-item">
+                        <span class="metric-icon">📊</span>
+                        <span class="metric-label">Подписчики:</span>
+                        <span class="metric-value">{{ header.metrics.followers|default('0') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">💬</span>
+                        <span class="metric-label">Общие комментарии:</span>
+                        <span class="metric-value">{{ header.metrics.totalComments|default('0') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">📅</span>
+                        <span class="metric-label">Дата:</span>
+                        <span class="metric-value">{{ header.metrics.reportDate|default('01.01.2025') }}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">📈</span>
+                        <span class="metric-label">ER:</span>
+                        <span class="metric-value">{{ header.metrics.averageER|default('0%') }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Buttons -->
+            <div class="export-buttons">
+                {% for button in header.buttons %}
+                <a href="#" class="export-btn" data-action="{{ button.action }}">
+                    <span class="export-icon">{{ '📊' if button.label == 'Excel' else '📄' if button.label == 'CSV' else '🗂️' if button.label == 'JSON' else '📁' }}</span>
+                    <span>{{ button.label }}</span>
+                    <span class="download-icon">↓</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Reels Section -->
+        <div class="reels-section">
+            {% for reel in reels %}
+            <div class="reel-card">
+                <div class="reel-preview-wrapper">
+                    <div class="reel-number">{{ reel.index }}</div>
+                    <img src="{{ reel.previewImage }}" alt="Reel preview" class="reel-preview">
+                    <div class="reel-author-overlay">
+                        {% if reel.author.avatar %}
+                        <img src="{{ reel.author.avatar }}" alt="{{ reel.author.username }}" class="reel-author-overlay-avatar">
+                        {% else %}
+                        <div class="reel-author-overlay-avatar" style="background-color: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #333;">{{ reel.author.username[1] }}</div>
+                        {% endif %}
+                        <span class="reel-author-overlay-username">{{ reel.author.username }}</span>
+                    </div>
+                </div>
+                
+                <div class="reel-content">
+                    <a href="{{ reel.reelUrl }}" class="reel-url" target="_blank">{{ reel.reelUrl }}</a>
+                    
+                    <div class="reel-metrics">
+                        <div class="reel-metric">
+                            <span class="reel-metric-icon">👁</span>
+                            <span>{{ reel.metrics.views }}</span>
+                        </div>
+                        <div class="reel-metric">
+                            <span class="reel-metric-icon">❤️</span>
+                            <span>{{ reel.metrics.likes }}</span>
+                        </div>
+                        <div class="reel-metric">
+                            <span class="reel-metric-icon">💬</span>
+                            <span>{{ reel.metrics.comments }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="reel-er">ER: {{ reel.metrics.er }}</div>
+                    
+                    {% if reel.is_top_reel %}
+                    <a href="#" class="scenario-btn vision-btn" data-callback="vision_scenario:{{ reel.id }}:{{ reel.video_url }}">
+                        <span>🔮</span>
+                        <span>Сценарий с AI Vision</span>
+                    </a>
+                    {% else %}
+                    <a href="#" class="scenario-btn" data-reel-id="{{ reel.id }}">
+                        <span>🎬</span>
+                        <span>{{ reel.ctaButton.label }}</span>
+                    </a>
+                    {% endif %}
+                    
+                    <p class="reel-caption">{{ reel.caption }}</p>
+                </div>
+            </div>
+
+            {% if reel.vision_analysis %}
+            <div class="vision-analysis-section">
+                <h3 class="vision-analysis-title">🔬 Визуальный анализ (AI Vision)</h3>
+                <div class="vision-analysis-content">
+                    <p>{{ reel.vision_analysis.visual_analysis | safe }}</p>
+                    {% if reel.vision_analysis.audio_transcript %}
+                    <h4>Транскрипция аудио:</h4>
+                    <p><em>{{ reel.vision_analysis.audio_transcript }}</em></p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
