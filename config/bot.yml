@@ -1,0 +1,61 @@
+# Bot configuration
+bot:
+  name: "Instagram Viral Analyzer"
+  username: "viralanalyzer_bot"
+  
+# API tokens
+api:
+  telegram_token: "${TELEGRAM_BOT_TOKEN}"
+  openai_api_key: "${OPENAI_API_KEY}"
+  apify_token: "${APIFY_TOKEN}"
+
+# MCP Server configuration
+mcp:
+  servers:
+    actors-mcp-server:
+      command: "npx"
+      args: ["-y", "@apify/actors-mcp-server"]
+      env:
+        APIFY_TOKEN: "${APIFY_TOKEN}"
+
+# OpenAI settings
+openai:
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 1000
+
+# Apify settings
+apify:
+  actor_id: "apify~instagram-profile-scraper"
+  default_params:
+    resultsType: "posts"
+    searchType: "hashtag"
+    sortBy: "TOP"
+    
+# Limits and timeouts
+limits:
+  max_requests_per_user: 10
+  max_clarification_iterations: 3
+  agent_timeout_seconds: 30
+  pdf_max_size_mb: 5
+  reels_per_analysis: 5
+
+# Database
+database:
+  url: "sqlite+aiosqlite:///data/database.db"
+  report_retention_days: 30
+
+# Currency
+pricing:
+  usd_to_rub: 90.0
+  markup_multiplier: 2
+
+# Timeouts
+timeouts:
+  default: 30
+  apify_run: 120
+  pdf_generation: 60
+
+# Environment
+environment: "${ENV:development}"
+debug: "${DEBUG:True}"
