@@ -118,3 +118,5 @@ pytest tests/e2e/
 ## Лицензия
 
 MIT License
+
+<!-- Security scan triggered at 2025-10-08 08:49:56 -->
